@@ -1,0 +1,27 @@
+{
+  "name": "MAX7XX",
+  "version": "0.0.1",
+  "description": "A library for driving a 7-segment display driven with a MAX7219 or MAX7221 IC.",
+  "keywords": "display, MAX7219, MAX7221",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/abaskin/MAX7XX"
+  },
+  "authors":
+  [
+    {
+      "name": "Andre Baskin",
+      "email": "andre@telatomica.com",
+      "url": "https://github.com/abaskin",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "exclude": [
+    ".github"
+  ],
+  "frameworks": "arduino",
+  "platforms": "*"
+}
