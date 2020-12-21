@@ -178,6 +178,7 @@ Update a range of digits. See the Character section for the format of vram.
 - `MAX72XX::ERROR::INVALID_DEVICE` - Invalid Device
 
 ### How the segments map to bits
-Each bit in that byte controls
-one of the digit's 8 segments:
+Each bit in the byte passed to a function in non-decode mode controls
+one of the digit's 8 segments. The MAX72XX::Segment constants may be used to
+refer to the desired segment.
 ![Chart of segments](https://i.imgur.com/IkFAebV.png)
