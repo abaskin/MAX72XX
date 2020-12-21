@@ -132,7 +132,7 @@ MAX72XX::Error MAX72XXDisplay::update() const
 
 void MAX72XXDisplay::fill(const uint8_t data, const bool decode)
 {
-	for(uint8_t d = 0; d < _num_digits; d++) writeChar(data, decode);
+	for(uint8_t d = 0; d < _num_digits; d++) writeChar(d, data, decode);
 }
 
 void MAX72XXDisplay::fill(const MAX72XX::Character data)
@@ -177,12 +177,12 @@ MAX72XX::Error MAX72XXDisplay::doWriteNumber(const long num,
 	uint8_t digit;
 	unsigned long number = abs(num);
 	for (digit = 0; digit < _num_digits && number != 0; digit++, number /= 10) {
-		MAX72XX::Error err = writeChar(digit, number % 10);
+		MAX72XX::Error err = writeChar(digit, number % 10, true);
 		if (err != MAX72XX::Error::OK) return(err);
 	}
 
 	while (digit <= decimalPlaces && digit < _num_digits) {
-		MAX72XX::Error err = writeChar(digit++, 0);
+		MAX72XX::Error err = writeChar(digit++, 0, true);
 		if (err != MAX72XX::Error::OK) return(err);
 	}
 
@@ -205,7 +205,7 @@ MAX72XX::Error MAX72XXDisplay::writeNumber(const long num,
 																 					 const uint8_t decimalPlaces,
 																					 const bool autoUpdate)
 {
-	return doWriteNumber(num, padding_char, decimalPlaces, false, autoUpdate);
+	return doWriteNumber(num, padding_char, false, decimalPlaces, autoUpdate);
 }
 
 MAX72XX::Error MAX72XXDisplay::writeNumber(const long num,
