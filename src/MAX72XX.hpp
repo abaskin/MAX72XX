@@ -101,7 +101,7 @@ class MAX72XX
 class MAX72XXDisplay
 {
 	public:
-		MAX72XXDisplay(MAX72XX* max7219, const uint8_t start,
+		MAX72XXDisplay(MAX72XX* max72xx, const uint8_t start,
 									 const uint8_t num_digits);
 		MAX72XX::Error update() const;
 		void fill(const uint8_t data, const bool decode = false);
@@ -140,7 +140,7 @@ class MAX72XXDisplay
 																 const uint8_t decimalPlaces,
 											 				 	 const bool autoUpdate);
 
-		MAX72XX* _max7219;
+		MAX72XX* _max72xx;
 		const uint8_t _start, _num_digits;
 		uint16_t* vram;
 };

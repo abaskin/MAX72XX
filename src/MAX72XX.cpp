@@ -118,16 +118,16 @@ MAX72XX::Error MAX72XX::update(const uint8_t start, const uint8_t numDigits,
 
 // MAX72XXDisplay
 
-MAX72XXDisplay::MAX72XXDisplay(MAX72XX* max7219, const uint8_t start,
+MAX72XXDisplay::MAX72XXDisplay(MAX72XX* max72xx, const uint8_t start,
 															 const uint8_t num_digits) :
-  _max7219(max7219), _start(start), _num_digits(num_digits),
+  _max72xx(max72xx), _start(start), _num_digits(num_digits),
 	vram(new uint16_t[_num_digits]()) {
 	update();
 }
 
 MAX72XX::Error MAX72XXDisplay::update() const
 {
-	return _max7219->update(_start, _num_digits, vram);
+	return _max72xx->update(_start, _num_digits, vram);
 }
 
 void MAX72XXDisplay::fill(const uint8_t data, const bool decode)
@@ -238,7 +238,7 @@ MAX72XX::Error MAX72XXDisplay::writeNumber(const float num,
 MAX72XX::Error MAX72XXDisplay::shutdown(const bool status) const {
 	if (status) {
 		uint16_t blanks[_num_digits] = {0};
-		MAX72XX::Error err = _max7219->update(_start, _num_digits, blanks);
+		MAX72XX::Error err = _max72xx->update(_start, _num_digits, blanks);
 		if (err != MAX72XX::Error::OK) return(err);
 	}
 	else return update();

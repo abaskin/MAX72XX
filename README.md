@@ -1,6 +1,8 @@
 # MAX72XX 7-segment display library
 
-This is a library for driving a 7-segment display driven with a MAX7219 or MAX7221 IC. It is originally based on the MAX7219 library by Frost Sheridan (https://github.com/Frostion/MAX7219-arduino-library).
+This is a library for driving a 7-segment display driven with a MAX7219 or
+MAX7221 IC. It is based originally on the MAX7219 library by Frost Sheridan
+(https://github.com/Frostion/MAX7219-arduino-library).
 
 ## Using the library
 
