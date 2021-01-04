@@ -3,7 +3,15 @@
 
 //library for using MAX7129 to drive 7-segment numerical displays
 
-#include "Arduino.h"
+#include <Arduino.h>
+#include <SPI.h>
+
+typedef struct {
+  uint8_t decode : 1,
+					written : 1,
+					error : 1;
+  uint8_t value;
+} MAX72XX_Digit_t;
 
 class MAX72XX
 {
@@ -64,10 +72,25 @@ class MAX72XX
 			OK,
 			INVALID_DIGIT,
 			INVALID_DEVICE,
+			INVALID_SCAN_LIMIT,
 		};
 
-		MAX72XX(const uint8_t pin_data, const uint8_t pin_clock,
-						const uint8_t pin_latch, const uint8_t num_devices = 1);
+		/*
+			If using hardware SPI
+			For other modules check the documentation.
+			| Arduino     | ESP8266                | MAX7219/MAX7221 |
+			| ----------- | ---------------------- | --------------- |
+			| MOSI (11)   | GPIO13 (D7 HMOSI)      | DIN             |
+			| SCK (13)    | CLK	GPIO14 (D5 HSCLK)  | CLK             |
+			| a free GPIO | a free GPIO            | LOAD/CS         |
+		*/
+
+		MAX72XX(const uint8_t dataPin, const uint8_t clockPin,
+						const uint8_t loadPin, const uint8_t numDevices = 1,
+					  const uint8_t digitsPerDevice = 8);
+
+		MAX72XX(const uint8_t loadPin, const uint8_t numDevices = 1,
+					  const uint8_t digitsPerDevice = 8);
 
 		Error writeRegister(const uint8_t deviceNum, const uint8_t address,
 											 const uint8_t value) const;
@@ -83,28 +106,45 @@ class MAX72XX
 		Error setIntensity(const uint8_t deviceNum, const uint8_t brightness) const;
 		Error setIntensity(const uint8_t brightness) const;
 
+		Error setScanLimit(const uint8_t deviceNum, const uint8_t limit) const;
+		Error setScanLimit(const uint8_t limit) const;
+
 		Error shutdown(const uint8_t deviceNum, const bool status) const;
 		Error shutdown(const bool status) const;
 
 		Error update(const uint8_t start, const uint8_t numDigits,
-								 const uint16_t* vram);
+								 MAX72XX_Digit_t* vram, const bool force = false);
+
+	  Error update(const uint8_t start, const uint8_t numDigits,
+								 const uint8_t value, const bool decode = false);
+
+	  Error update(const uint8_t start, const uint8_t numDigits,
+								 const Character value);
+
+		uint8_t digitsPerDevice() { return _digitsPerDevice; }
 
 	private:
-		Error setDecodeReg(const uint8_t digit, const bool decode);
+		void begin() const;
+		Error setDecodeReg(const uint8_t digit, const uint8_t decode);
 		void writeToDevice(const uint8_t addr, const uint8_t data) const;
+		void writeDigit(const uint8_t digit, const uint8_t value) const;
+		void startWrite() const;
+		void endWrite() const;
 
-		const uint8_t _pin_data, _pin_clock, _pin_latch, _num_devices;
-		uint8_t* decodeReg;
-		const uint8_t digitsPerDevice = 8;
+		const uint8_t _dataPin, _clockPin, _loadPin, _numDevices, _digitsPerDevice;
+		const bool _hardwareSPI;
+		uint8_t* _decodeReg;
 };
 
 class MAX72XXDisplay
 {
 	public:
 		MAX72XXDisplay(MAX72XX* max72xx, const uint8_t start,
-									 const uint8_t num_digits);
-		MAX72XX::Error update() const;
-		void fill(const uint8_t data, const bool decode = false);
+									 const uint8_t numDigits);
+
+    MAX72XX::Error update(const bool force = false) const;
+
+    void fill(const uint8_t data, const bool decode = false);
 		void fill(const MAX72XX::Character data);
 
 		MAX72XX::Error writeChar(const uint8_t digit, const uint8_t data,
@@ -112,37 +152,41 @@ class MAX72XXDisplay
 		MAX72XX::Error writeChar(const uint8_t digit,
 														 const MAX72XX::Character data);
 
-		uint16_t readChar(const uint8_t digit) const;
+		MAX72XX_Digit_t readChar(const uint8_t digit) const;
 
-		MAX72XX::Error setDecimalPoint(const uint8_t digit);
+		MAX72XX::Error setDecimalPoint(const uint8_t digit,
+                                   const bool autoUpdate = true);
 
-		MAX72XX::Error writeNumber(const long num, const uint8_t padding_char,
-									 	 					 const uint8_t decimalPlaces = 0,
+		MAX72XX::Error writeNumber(const int32_t num,
+															 const uint8_t paddingChar,
+									 	 					 const int8_t decimalPlaces = -1,
 															 const bool autoUpdate = true);
-	  MAX72XX::Error writeNumber(const long num,
-															 const MAX72XX::Character padding_char,
-									 	 					 const uint8_t decimalPlaces = 0,
+	  MAX72XX::Error writeNumber(const int32_t num,
+															 const MAX72XX::Character paddingChar,
+									 	 					 const int8_t decimalPlaces = -1,
 															 const bool autoUpdate = true);
 
-		MAX72XX::Error writeNumber(const float num, const uint8_t padding_char,
-										 					 const uint8_t decimalPlaces,
+		MAX72XX::Error writeNumber(const float num,
+															 const uint8_t paddingChar,
+										 					 const int8_t decimalPlaces,
 															 const bool autoUpdate = true);
 		MAX72XX::Error writeNumber(const float num,
-															 const MAX72XX::Character padding_char,
-										 					 const uint8_t decimalPlaces,
+															 const MAX72XX::Character paddingChar,
+										 					 const int8_t decimalPlaces,
 															 const bool autoUpdate = true);
 
 		MAX72XX::Error shutdown(const bool status) const;
 
 	private:
-		MAX72XX::Error doWriteNumber(const long num, const uint8_t padding_char,
+		MAX72XX::Error doWriteNumber(const int32_t num,
+																 const uint8_t paddingChar,
 											 					 const bool decodePadding,
-																 const uint8_t decimalPlaces,
+																 const int8_t decimalPlaces,
 											 				 	 const bool autoUpdate);
 
 		MAX72XX* _max72xx;
-		const uint8_t _start, _num_digits;
-		uint16_t* vram;
+		const uint8_t _start, _numDigits;
+		MAX72XX_Digit_t* vram;
 };
 
 #endif
