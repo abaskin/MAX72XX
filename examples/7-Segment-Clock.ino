@@ -1,29 +1,40 @@
-// A simple NTP based clock for ESP8266
+// A simple NTP based clock for ESP8266/ESP32
 //
 // This uses two displays to show the time and data.
 // Decimal points are used to separate the time and date fields.
 // It takes around four seconds for the time to sync with the ntp server.
 //
 
-#include "Arduino.h"
-#include "MAX72XX.h"
+#include <Arduino.h>
+#include <MAX72XX.h>
 
 #include <sys/time.h>   // struct timeval
 #include <time.h>       // time() ctime()
-#include <TZ.h>
 
-#include <ESP8266WiFiMulti.h>
 #include <Ticker.h>
+
+#if defined ESP8266
+  #include <ESP8266WiFiMulti.h>
+  #include <TZ.h>
+
+  ESP8266WiFiMulti wifiMulti;       // create WiFi object
+
+  constexpr uint8_t latchPin = D1;  // change to reflect your latchPin
+#elif defined ESP32
+  #include <WiFiMulti.h>
+
+  WiFiMulti wifiMulti;              // create WiFi object
+
+  constexpr uint8_t latchPin = 15;  // change to reflect your latchPin
+#endif
 
 constexpr auto STASSID = "<<WIFI SSID>";
 constexpr auto STAPSK = "<<WIFI SECRET>>";
 
- // change to your timezone or use a value from TZ.h
+ // change to your timezone or use a value from TZ.h (ESP8266)
 #define TZ PSTR("ICT-7")
 
 constexpr uint8_t numDevices = 2; // the number of devices
-
-constexpr uint8_t latchPin = D1;  // change to reflect your latchPin
 
 // for hardware SPI
 // create the object for the device chain
@@ -47,18 +58,20 @@ MAX72XXDisplay  dayDisp(&dispChain, 6, 2);
 MAX72XXDisplay  monDisp(&dispChain, 4, 2);
 MAX72XXDisplay  yearDisp(&dispChain, 0, 4);
 
-// create the wifi object
-ESP8266WiFiMulti wifiMulti;
-
 // create the ticker to update the displays
 Ticker updateTicker;
 
 void setup() {
-  configTime(TZ, "pool.ntp.org"); // setup ntp sync
-
   wifiMulti.addAP(STASSID, STAPSK); // add the ssid and secret
 
   WiFi.mode(WIFI_STA); // set the wifi type to station
+
+  // setup ntp sync
+  #if defined ESP8266
+    configTime(TZ, "pool.ntp.org");
+  #elif defined ESP32
+    configTzTime(TZ,  "pool.ntp.org");
+  #endif
 
   dispChain.setIntensity(6); // set the intensity for all the devices
 
@@ -83,7 +96,7 @@ void setup() {
     // minute
     static int currMin = -1;
     if (currMin != tm->tm_min) {
-      currMin != tm->tm_min;
+      currMin = tm->tm_min;
       minDisp.writeNumber(tm->tm_min, MAX72XX::Character::ZERO, 0);
     }
 

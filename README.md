@@ -30,11 +30,11 @@ Hardware SPI support is enabled by using the MAX72XX object declaration which
 omits the dataPin and clockPin parameters. If hardware SPI is enabled use the
 pins shown below. For other modules check the module's documentation.
 
-| Arduino     | ESP8266               | MAX7219/MAX7221 |
-| ----------- | --------------------- | --------------- |
-| MOSI (11)   | GPIO13 (D7 HMOSI)     | DIN             |
-| SCK (13)    | CLK GPIO14 (D5 HSCLK) | CLK             |
-| A Free GPIO | A Free GPIO           | LOAD/CS         |
+| Arduino     | ESP8266               | ESP32       | MAX7219/MAX7221 |
+| ----------- | --------------------- | ----------- | --------------- |
+| MOSI (11)   | GPIO13 (D7 HMOSI)     | GPIO 23     | DIN             |
+| SCK (13)    | CLK GPIO14 (D5 HSCLK) | GPIO 18     | CLK             |
+| A Free GPIO | A Free GPIO           | A Free GPIO | LOAD/CS         |
 
 ## Declaring the MAX72XX object
 
